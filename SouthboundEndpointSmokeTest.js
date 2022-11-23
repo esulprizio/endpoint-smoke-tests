@@ -4,11 +4,11 @@ const fs = require('fs');
 const { default: axios } = require('axios');
 
 args
-  .option('siteName', 'Name of the site (or localhost) to run smoke test against')
-  .option('basicUsername', 'Username to be used for HTTP basic authentication')
-  .option('basicPassword', 'Password to be used for HTTP basic authentication');
+    .option('siteName', 'Name of the site (or localhost) to run smoke test against')
+    .option('basicUsername', 'Username to be used for HTTP basic authentication')
+    .option('basicPassword', 'Password to be used for HTTP basic authentication');
 
-const showHelp = (missingArgs) => {
+const exitWithHelp = (missingArgs) => {
     console.log(`Invalid or missing required argument(s) ${missingArgs.join(", ")}, see help:\n`);
 
     args.showHelp() && process.exit(1);
@@ -35,7 +35,7 @@ const parsedArgs = args.parse(process.argv);
 const missingArgs = findMissingArgs(parsedArgs);
 
 if (missingArgs.length !== 0) {
-    showHelp(missingArgs);
+    exitWithHelp(missingArgs);
 }
 
 const replacePathPlaceholders = (path) => {
@@ -57,7 +57,7 @@ const replacePathPlaceholders = (path) => {
 }
 
 const verifyEndpointIsReachable = async (siteName, endpointConfig) => {
-    const url = siteName !== "localhost" ? `https://${siteName}.6river.org` : "localhost";
+    const url = siteName !== "localhost" ? `https://${siteName}.6river.org` : "http://localhost";
     const fullUrl = `${url}${replacePathPlaceholders(endpointConfig.path)}`;
     const requestStr = `${endpointConfig.method.toUpperCase()} ${fullUrl}`;
     const expectedStatusCodes = [400, 404, 415];
@@ -74,7 +74,7 @@ const verifyEndpointIsReachable = async (siteName, endpointConfig) => {
 
     } catch (e) {
         if (!(expectedStatusCodes.includes(e?.response?.status))) {
-            console.log(`POSSIBLY NOT REACHABLE: request ${requestStr} failed with error ${e}`);
+            console.log(`POSSIBLY NOT REACHABLE: ${requestStr} failed with error ${e}`);
         }
     }
 }
@@ -98,5 +98,5 @@ for (const [path, spec] of Object.entries(doc.paths)) {
             username: parsedArgs.basicUsername,
             password: parsedArgs.basicPassword,
         }
-    });
+    }).catch((e) => console.log(e));
 }
