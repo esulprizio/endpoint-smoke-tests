@@ -39,21 +39,7 @@ if (missingArgs.length !== 0) {
 }
 
 const replacePathPlaceholders = (path) => {
-    const placeholders = [
-        "asnID",
-        "returnID",
-        "inboundLineID",
-        "shipmentID",
-        "productID",
-        "snapshotId"
-    ];
-
-    let output = path;
-    for (const placeholder of placeholders) {
-        output = output.replace(`{${placeholder}}`, "1");
-    }
-
-    return output;
+    return path.replace(/{.*}/, "1");
 }
 
 const verifyEndpointIsReachable = async (siteName, endpointConfig) => {
